@@ -1,17 +1,46 @@
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
-ctx.imageSmoothingEnabled = false;
-ctx.webkitImageSmoothingEnabled = false; // Chrome, Safari
 
 canvas.width = window.innerWidth-100;
 canvas.height = window.innerHeight-100;
-canvas.style.width = `${window.innerWidth-100}px`;
-canvas.style.height = `${window.innerHeight-100}px`;
+
 
 import { Player } from "./entities.js";
+import { Alien } from "./entities.js";
+import { Bullet } from "./entities.js";
 
 let hasStarted = false;
-let keys = {
+const player = new Player({
+    ctx,
+    position:{
+        x: canvas.width/2-48,
+        y: canvas.height-96
+    }
+});
+const bullet = [];
+const alien = [];
+const alienBullet = [];
+for(let i=0; i<10;i++){
+    let x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
+    let y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
+
+    for(let j=0; j<alien.length; j++){
+        if(x+64 >= alien[j].left && x <= alien[j].right && y+100 >= alien[j].top && y <= alien[j].bottom){
+            x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
+            y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
+            j = 0;
+        }
+    }
+
+    alien.push(new Alien({
+        ctx,
+        position: {
+            x, y
+        }
+    }));
+}
+
+const keys = {
     w: false,
     a: false,
     s: false,
@@ -52,18 +81,53 @@ const titleScreen = ()=>{
 titleScreen();
 
 
-const player = new Player({
-    position:{
-        x: canvas.width/2-48,
-        y: canvas.height-96
-    }
-})
 const animate = ()=>{
     if(!hasStarted){
         return;
     }
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    player.update(keys);
-    player.draw(ctx);
+
+    if(keys[" "]){
+        bullet.push(new Bullet({
+            ctx,
+            position:{
+                x: player.position.x,
+                y: player.position.y
+            }
+        }));    
+    }
+
+    for(let i=0;i<alien.length;i++){
+        
+        for(let j=0;j<alien.length;j++){
+            if(alien[i].right >= alien[j].left && alien[i].left <= alien[j].right  && alien[i].bottom >= alien[j].top && alien[i].top <= alien[j].bottom){
+                
+                alien[i].direction.x *= -1;
+                alien[i].direction.y *= -1;
+                
+                alien[j].direction.x *= -1;
+                alien[j].direction.y *= -1;
+                
+            }
+        }
+        
+        for(let j=0;j<bullet.length;j++){
+            if(alien[i].right >= bullet[j].left && alien[i].left <= bullet[j].right  && alien[i].bottom >= bullet[j].top && alien[i].top <= bullet[j].bottom){
+                alien[i].isDead = true;
+                bullet[j].isHit = true; 
+            }
+        }
+
+        alien[i].draw();
+        alien[i].update(canvas);
+    }
+
+    for(let i=0;i<bullet.length;i++){
+        bullet[i].draw();
+        bullet[i].update();
+    }
+
+    player.update(keys, canvas);
+    player.draw();
     requestAnimationFrame(animate);
 };

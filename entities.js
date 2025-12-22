@@ -10,24 +10,40 @@ class Player {
             x: 2,
             y: 2
         };
+        this.health = 100;
         this.color = "red";
         this.isMoving = false;
         this.adjustFill = 48;
+        this.imageIndex = 0;
         this.shipFull = new Image();
         this.shipFull.src = "./assets/player/shipFull.png";
         this.engine = new Image();
         this.engine.src = "./assets/player/engine.png";
     }
 
+    get left(){
+        return this.position.x;
+    }
+    get right(){
+        return this.position.x+this.size.width;
+    }
+    get top(){
+        return this.position.y;
+    }
+    get bottom(){
+        return this.position.y+this.size.height;
+    }
+
     draw() {
         this.ctx.beginPath();
-        this.ctx.fillStyle = this.color;
-        this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
-        this.ctx.drawImage(this.shipFull, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
+        // this.ctx.fillStyle = this.color;
+        // this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
+        this.ctx.drawImage(this.shipFull,   this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         if(this.isMoving){
-            this.ctx.drawImage(this.engine, 0, 0, 48, 48, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
+            this.ctx.drawImage(this.engine, this.imageIndex*48, 48, 48, 48, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         }
         else{
+            this.ctx.drawImage(this.engine, this.imageIndex*48, 0, 48, 48, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         }
         this.ctx.closePath();
     }
@@ -97,14 +113,13 @@ class Bullet {
 
     update() {
         if(this.isHit){
-            this.position.x = -100;
-            this.position.y = -100;
+            this.position.x = -300;
+            this.position.y = -300;
             return;
         }
         this.position.y-= this.speed;
     }
 }
-
 
 class Alien {
     constructor({ctx, position}){
@@ -122,7 +137,12 @@ class Alien {
             x: 1,
             y: 1
         };
+        this.hitCount = 0;
         this.isDead = false;
+        this.adjustFill = 32;
+        this.imageIndex = 0;
+        this.enemy1 = new Image();
+        this.enemy1.src = "./assets/enemy/enemy1.png";
     }
     
     get left(){
@@ -140,24 +160,24 @@ class Alien {
 
     draw() {
         if(this.isDead){
+            this.ctx.drawImage(this.enemy1, this.imageIndex*64, 0*64, 64, 64, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
             return;
         }
         this.ctx.beginPath();
-        this.ctx.fillStyle = "orange";
-        this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
+        // this.ctx.fillStyle = "orange";
+        // this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
+        this.ctx.drawImage(this.enemy1, this.imageIndex*64, 0*64, 64, 64, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         this.ctx.closePath();
     }
 
     update(canvas) {
         if(this.isDead){
-            this.position.x = -100;
-            this.position.y = -100;
             return;
         }
         if(this.left < 0 || this.right > canvas.width){
             this.direction.x *= -1;
         }
-        if(this.top < 0 || this.bottom > canvas.height/2){
+        if(this.top < 0 || this.bottom > canvas.height){
             this.direction.y *= -1;
         }
 
@@ -167,5 +187,8 @@ class Alien {
     }
 }
 
+class Asteroid {
+    constructor() {}
+}
 
-export {Player, Bullet, Alien};
+export {Player, Bullet, Alien, Asteroid};

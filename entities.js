@@ -15,10 +15,14 @@ class Player {
         this.isMoving = false;
         this.adjustFill = 48;
         this.imageIndex = 0;
-        this.shipFull = new Image();
-        this.shipFull.src = "./assets/player/shipFull.png";
+        this.ship = new Image();
         this.engine = new Image();
         this.engine.src = "./assets/player/engine.png";
+        this.audio = {
+            playerDead: new Audio("./assets/audio/playerDead.ogg"),
+            playerHit: new Audio("./assets/audio/playerHit.ogg"),
+            stageClear: new Audio("./assets/audio/stageClear.ogg")
+        };
     }
 
     get left(){
@@ -38,7 +42,22 @@ class Player {
         this.ctx.beginPath();
         // this.ctx.fillStyle = this.color;
         // this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
-        this.ctx.drawImage(this.shipFull,   this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
+        if(this.health == 100){
+            this.ship.src = "./assets/player/shipFull.png";
+        }
+        else if(this.health<=75){
+            this.ship.src = "./assets/player/shipQuarter.png";
+        }
+        else if(this.health<=50){
+            this.ship.src = "./assets/player/shipHalf.png";
+        }
+        else if(this.health<=25){
+            this.ship.src = "./assets/player/shipAlmost.png";
+        }
+        
+        this.ctx.drawImage(this.ship, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
+
+
         if(this.isMoving){
             this.ctx.drawImage(this.engine, this.imageIndex*48, 48, 48, 48, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         }
@@ -143,6 +162,10 @@ class Alien {
         this.imageIndex = 0;
         this.enemy1 = new Image();
         this.enemy1.src = "./assets/enemy/enemy1.png";
+        this.audio = {
+            enemyDead: new Audio("./assets/audio/enemyDead.ogg"),
+            enemyHit: new Audio("./assets/audio/enemyHit.ogg"),
+        };
     }
     
     get left(){

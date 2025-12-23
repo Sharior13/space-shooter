@@ -1,8 +1,8 @@
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth-100;
-canvas.height = window.innerHeight-100;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 
 import { Player } from "./entities.js";
@@ -87,7 +87,10 @@ const titleScreen = ()=>{
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.font = "50px Arial";
-    ctx.fillStyle = "black";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 9;
+    ctx.strokeText("Press any key to start", canvas.width/2-250, canvas.height/2, 500);
+    ctx.fillStyle = "white";
     ctx.fillText("Press any key to start", canvas.width/2-250, canvas.height/2, 500);
     ctx.closePath();
     window.addEventListener("keydown", gameStart);
@@ -119,8 +122,10 @@ const animate = ()=>{
             if(alien[i].right >= bullet[j].left && alien[i].left <= bullet[j].right  && alien[i].bottom >= bullet[j].top && alien[i].top <= bullet[j].bottom){
                 bullet[j].isHit = true; 
                 alien[i].hitCount++;
+                alien[i].audio.enemyHit.play();
                 if(alien[i].hitCount==3){
                     alien[i].isDead = true;
+                    alien[i].audio.enemyDead.play();
                 }
             }
         }
@@ -128,6 +133,7 @@ const animate = ()=>{
         if(alien[i].right >= player.left && alien[i].left <= player.right  && alien[i].bottom >= player.top && alien[i].top <= player.bottom){
             setTimeout(()=>{
                 player.health-=10/100;
+                player.audio.playerHit.play();
         },500);
         }
 
@@ -159,9 +165,14 @@ const gameLose = () =>{
     hasStarted = false;
     ctx.beginPath();
     ctx.font = "50px Arial";
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = "black";
+    ctx.strokeText("Game Over", canvas.width/2-150, canvas.height/2, 300);
     ctx.fillStyle = "red";
     ctx.fillText("Game Over.", canvas.width/2-150, canvas.height/2, 300);
     ctx.closePath();
+    player.audio.playerDead.play();
+
     setTimeout(()=>{
         player.position = {
             x: canvas.width/2-48,
@@ -178,9 +189,13 @@ const gameWin = ()=>{
     hasStarted = false;
     ctx.beginPath();
     ctx.font = "50px Arial";
+    ctx.lineWidth = 9;
+    ctx.strokeStyle = "black";
+    ctx.strokeText("Stage Clear!", canvas.width/2-150, canvas.height/2, 300);
     ctx.fillStyle = "green";
     ctx.fillText("Stage Clear!", canvas.width/2-150, canvas.height/2, 300);
     ctx.closePath();
+    player.audio.stageClear.play();
     setTimeout(()=>{
         player.position = {
             x: canvas.width/2-48,

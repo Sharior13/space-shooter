@@ -1,9 +1,10 @@
 *{
-    /* padding: 0;
-    margin: 0; */
+    padding: 0;
+    margin: 0;
     overflow: hidden;
     background-color: antiquewhite; 
 }
 #canvas{
     border: 1px solid black;
+    background-image: url('./assets/background/background.png');
 }

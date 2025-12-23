@@ -5,6 +5,5 @@
     background-color: antiquewhite; 
 }
 #canvas{
-    border: 1px solid black;
     background-image: url('./assets/background/background.png');
 }

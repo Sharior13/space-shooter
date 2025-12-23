@@ -5,13 +5,12 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 
-import { Player } from "./entities.js";
-import { Alien } from "./entities.js";
-import { Bullet } from "./entities.js";
+import Player from "./player.js";
+import Bullet from "./bullet.js";
+import Alien from "./alien.js";
 
 let hasStarted = false, canFire = true, timer = 60, score = 0, stage = 1;
 const player = new Player({
-    ctx,
     position:{
         x: canvas.width/2-48,
         y: canvas.height-96
@@ -21,6 +20,7 @@ let bullet = [];
 let alien = [];
 const alienBullet = [];
 
+//map user inputs
 const keys = {
     w: false,
     a: false,
@@ -33,22 +33,24 @@ const keys = {
     " ": false
 };
 
+//listen to user input
 window.addEventListener("keydown",(event)=>{
     if(event.key in keys){
         keys[event.key] = true;
     }
+    //spawn bullets on pressing space & ensure it doesnt spawn continously
     if(keys[" "] && canFire){
         bullet.push(new Bullet({
-            ctx,
             position:{
                 x: player.position.x,
                 y: player.position.y
             }
-        }));   
+        }));
+        bullet[0].laser.play();
         canFire = false;
         setTimeout(()=>{
             canFire = true;
-        },100);
+        },150);
     }
 });
 window.addEventListener("keyup",(event)=>{
@@ -61,6 +63,7 @@ const gameStart = ()=>{
     window.removeEventListener("keydown", gameStart);
     hasStarted = true;
 
+    //spawn aliens in random positions with no overlapping by checking collision beforehand
     for(let i=0; i<10*stage;i++){
         let x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
         let y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
@@ -74,16 +77,12 @@ const gameStart = ()=>{
         }
 
         alien.push(new Alien({
-            ctx,
             position: {
                 x, y
             }
         }));
     }
     animate();
-    setInterval(()=>{
-        timer--;
-    },1000);
 };
 
 const titleScreen = ()=>{
@@ -112,8 +111,9 @@ const animate = ()=>{
 
     for(let i=0;i<alien.length;i++){
         
+        //check for alien-to-alien collision
         for(let j=0;j<alien.length;j++){
-            if(alien[i].right >= alien[j].left && alien[i].left <= alien[j].right  && alien[i].bottom >= alien[j].top && alien[i].top <= alien[j].bottom){
+            if(collisionDetection(alien[i], alien[j])){
                 
                 alien[i].direction.x *= -1;
                 alien[i].direction.y *= -1;
@@ -124,10 +124,12 @@ const animate = ()=>{
             }
         }
         
+        //check for bullet to aliemn collision
         for(let j=0;j<bullet.length;j++){
-            if(alien[i].right >= bullet[j].left && alien[i].left <= bullet[j].right  && alien[i].bottom >= bullet[j].top && alien[i].top <= bullet[j].bottom){
+            if(collisionDetection(alien[i], bullet[j])){
                 bullet[j].isHit = true; 
                 alien[i].hitCount++;
+                alien[i].imageIndex++;
                 alien[i].audio.enemyHit.play();
                 if(alien[i].hitCount==3){
                     alien[i].isDead = true;
@@ -137,26 +139,28 @@ const animate = ()=>{
             }
         }
 
-        if(alien[i].right >= player.left && alien[i].left <= player.right  && alien[i].bottom >= player.top && alien[i].top <= player.bottom){
+        //check for player to alien collision
+        if(collisionDetection(alien[i], player)){
+            player.audio.playerHit.play();
             setTimeout(()=>{
                 player.health-=10/100;
-                player.audio.playerHit.play();
         },500);
         }
 
-        alien[i].draw();
+        alien[i].draw(ctx);
         alien[i].update(canvas);
     }
 
     for(let i=0;i<bullet.length;i++){
-        bullet[i].draw();
+        bullet[i].draw(ctx);
         bullet[i].update();
     }
 
-
+    //lose condition
     if(player.health<=0 || timer<=0){
         gameLose();
     }
+    //win condition
     else if(alien.every((aelin)=>{
         return aelin.isDead == true;
     })){
@@ -164,11 +168,20 @@ const animate = ()=>{
     }
 
     player.update(keys, canvas);
-    player.draw();
+    player.draw(ctx);
 
     showTimer();
     showScore();
     requestAnimationFrame(animate);
+};
+
+const collisionDetection = (A, B) =>{
+    if(A.right >= B.left && A.left <= B.right  && A.bottom >= B.top && A.top <= B.bottom){
+        return true;
+    }
+    else{
+        return false;
+    }
 };
 
 const gameLose = () =>{
@@ -183,6 +196,7 @@ const gameLose = () =>{
     ctx.closePath();
     player.audio.playerDead.play();
     
+    //goto titlescreen after 2 sec
     setTimeout(()=>{
         score = 0;
         stage = 1;
@@ -203,6 +217,7 @@ const gameWin = ()=>{
     ctx.closePath();
     player.audio.stageClear.play();
     
+    //goto titlescreen after 2 sec
     setTimeout(()=>{
         stage++;
         resetVal();
@@ -210,6 +225,7 @@ const gameWin = ()=>{
     },2000);
 };
 
+//reset all stats and bullet & alien arrays
 const resetVal = () =>{
         player.position = {
             x: canvas.width/2-48,
@@ -230,6 +246,7 @@ const showTimer = () =>{
     ctx.fillStyle = "red";
     ctx.fillText(`Time Left: ${timer}`, canvas.width-240, 40, 240);
 };
+
 const showScore = () =>{
     ctx.beginPath();
     ctx.font = "40px Arial";
@@ -241,10 +258,11 @@ const showScore = () =>{
 };
 
 setInterval(()=>{
+    //check for alien dying to play dead animation
     for(let i=0; i<alien.length; i++){
         if(alien[i].isDead){
             alien[i].imageIndex++;
-            if(alien[i].imageIndex>=16){
+            if(alien[i].imageIndex>=18){
                 alien[i].position = {
                     x: -100,
                     y: -100
@@ -256,6 +274,8 @@ setInterval(()=>{
             }
         }
     }
+
+    //check for player movement to play idle or moving engine animation
     player.imageIndex++;
     if(player.isMoving){
         if(player.imageIndex>=3){
@@ -268,3 +288,7 @@ setInterval(()=>{
         }
     }
 },100);
+
+setInterval(()=>{
+    timer--;
+},1000);

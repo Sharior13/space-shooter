@@ -9,7 +9,7 @@ import { Player } from "./entities.js";
 import { Alien } from "./entities.js";
 import { Bullet } from "./entities.js";
 
-let hasStarted = false, canFire = true;
+let hasStarted = false, canFire = true, timer = 60, score = 0, stage = 1;
 const player = new Player({
     ctx,
     position:{
@@ -61,7 +61,7 @@ const gameStart = ()=>{
     window.removeEventListener("keydown", gameStart);
     hasStarted = true;
 
-    for(let i=0; i<10;i++){
+    for(let i=0; i<10*stage;i++){
         let x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
         let y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
 
@@ -87,8 +87,11 @@ const titleScreen = ()=>{
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
     ctx.font = "50px Arial";
-    ctx.strokeStyle = "black";
     ctx.lineWidth = 9;
+    ctx.strokeStyle = "black";
+    ctx.strokeText(`Stage ${stage}`, canvas.width/2-100, canvas.height/2 - 100, 200);
+    ctx.fillStyle = "white";
+    ctx.fillText(`Stage ${stage}`, canvas.width/2-100, canvas.height/2 - 100, 200);
     ctx.strokeText("Press any key to start", canvas.width/2-250, canvas.height/2, 500);
     ctx.fillStyle = "white";
     ctx.fillText("Press any key to start", canvas.width/2-250, canvas.height/2, 500);
@@ -126,6 +129,7 @@ const animate = ()=>{
                 if(alien[i].hitCount==3){
                     alien[i].isDead = true;
                     alien[i].audio.enemyDead.play();
+                    score+=Math.floor(Math.random()* (10-4) + 4);
                 }
             }
         }
@@ -147,7 +151,7 @@ const animate = ()=>{
     }
 
 
-    if(player.health<=0){
+    if(player.health<=0 || timer<=0){
         gameLose();
     }
     else if(alien.every((aelin)=>{
@@ -158,6 +162,9 @@ const animate = ()=>{
 
     player.update(keys, canvas);
     player.draw();
+
+    showTimer();
+    showScore();
     requestAnimationFrame(animate);
 };
 
@@ -172,15 +179,11 @@ const gameLose = () =>{
     ctx.fillText("Game Over.", canvas.width/2-150, canvas.height/2, 300);
     ctx.closePath();
     player.audio.playerDead.play();
-
+    
     setTimeout(()=>{
-        player.position = {
-            x: canvas.width/2-48,
-            y: canvas.height-96
-        };
-        player.health = 100;
-        bullet = [];
-        alien = [];
+        score = 0;
+        stage = 1;
+        resetVal();
         titleScreen();
     },2000);
 };
@@ -196,7 +199,15 @@ const gameWin = ()=>{
     ctx.fillText("Stage Clear!", canvas.width/2-150, canvas.height/2, 300);
     ctx.closePath();
     player.audio.stageClear.play();
+    
     setTimeout(()=>{
+        stage++;
+        resetVal();
+        titleScreen();
+    },2000);
+};
+
+const resetVal = () =>{
         player.position = {
             x: canvas.width/2-48,
             y: canvas.height-96
@@ -204,8 +215,26 @@ const gameWin = ()=>{
         player.health = 100;
         bullet = [];
         alien = [];
-        titleScreen();
-    },2000);
+        timer = 60;
+};
+
+const showTimer = () =>{
+    ctx.beginPath();
+    ctx.font = "40px Arial";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 9;
+    ctx.strokeText(`Time Left: ${timer}`, canvas.width-240, 40, 240);
+    ctx.fillStyle = "red";
+    ctx.fillText(`Time Left: ${timer}`, canvas.width-240, 40, 240);
+};
+const showScore = () =>{
+    ctx.beginPath();
+    ctx.font = "40px Arial";
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 9;
+    ctx.strokeText(`Score: ${score}`, 10, 40, 300);
+    ctx.fillStyle = "red";
+    ctx.fillText(`Score: ${score}`, 10, 40, 300);
 };
 
 setInterval(()=>{
@@ -236,3 +265,7 @@ setInterval(()=>{
         }
     }
 },100);
+
+setInterval(()=>{
+    timer--;
+},1000);

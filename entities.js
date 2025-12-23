@@ -42,13 +42,13 @@ class Player {
         this.ctx.beginPath();
         // this.ctx.fillStyle = this.color;
         // this.ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
-        if(this.health == 100){
+        if(this.health <= 100 && this.health>75){
             this.ship.src = "./assets/player/shipFull.png";
         }
-        else if(this.health<=75){
+        else if(this.health<=75 && this.health>50){
             this.ship.src = "./assets/player/shipQuarter.png";
         }
-        else if(this.health<=50){
+        else if(this.health<=50 && this.health>25){
             this.ship.src = "./assets/player/shipHalf.png";
         }
         else if(this.health<=25){

@@ -105,6 +105,8 @@ class Bullet {
         }
         this.speed = 3;
         this.isHit = false;
+        this.image = new Image();
+        this.image.src = "./assets/bullet/laser.png"
     }
 
     get left(){
@@ -126,7 +128,8 @@ class Bullet {
         }
         this.ctx.beginPath();
         this.ctx.fillStyle = "green";
-        this.ctx.fillRect(this.position.x+45, this.position.y-40, this.size.width, this.size.height);
+        // this.ctx.fillRect(this.position.x+45, this.position.y-40, this.size.width, this.size.height);
+        this.ctx.drawImage(this.image, 0, 0, 32, 32, this.position.x+45, this.position.y-40, this.size.width, this.size.height);
         this.ctx.closePath();
     }
 

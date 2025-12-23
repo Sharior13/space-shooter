@@ -9,7 +9,7 @@ import { Player } from "./entities.js";
 import { Alien } from "./entities.js";
 import { Bullet } from "./entities.js";
 
-let hasStarted = false, canFire = true, timer = 60, score = 0, stage = 1;
+let hasStarted = false, canFire = true, timer = 10, score = 0, stage = 1;
 const player = new Player({
     ctx,
     position:{
@@ -81,6 +81,9 @@ const gameStart = ()=>{
         }));
     }
     animate();
+    setInterval(()=>{
+        timer--;
+    },1000);
 };
 
 const titleScreen = ()=>{
@@ -265,7 +268,3 @@ setInterval(()=>{
         }
     }
 },100);
-
-setInterval(()=>{
-    timer--;
-},1000);

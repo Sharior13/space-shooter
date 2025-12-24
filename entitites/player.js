@@ -10,7 +10,6 @@ class Player {
             y: 2
         };
         this.health = 100;
-        this.color = "red";
         this.isMoving = false;
         this.adjustFill = 48; //to fit ship into hitbox
         this.imageIndex = 0;
@@ -39,21 +38,26 @@ class Player {
 
     draw(ctx) {
         ctx.beginPath();
-        // ctx.fillStyle = this.color;
+        // ctx.fillStyle = "blue";
         // ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
         if(this.health <= 100 && this.health>75){
             this.ship.src = "./assets/player/shipFull.png";
+            ctx.fillStyle = "green";
         }
         else if(this.health<=75 && this.health>50){
             this.ship.src = "./assets/player/shipQuarter.png";
+            ctx.fillStyle = "lime";
         }
         else if(this.health<=50 && this.health>25){
             this.ship.src = "./assets/player/shipHalf.png";
+            ctx.fillStyle = "yellow";
         }
         else if(this.health<=25){
             this.ship.src = "./assets/player/shipAlmost.png";
+            ctx.fillStyle = "red";
         }
-        
+
+        ctx.fillRect(this.position.x-2, this.position.y+this.size.height, this.health, 10);
         ctx.drawImage(this.ship, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
 
 

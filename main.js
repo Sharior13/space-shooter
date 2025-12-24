@@ -8,11 +8,13 @@ let ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-let hasStarted = false, canFire = true, timer = 60, score = 0, stage = 1;
+let hasStarted = false, canFire = true, timer = 60, score = 0, totalEnemies = 4, stage = 1;
+let theme = new Audio("./assets/audio/theme.ogg");
+theme.volume = 0.5;
 const player = new Player({
     position:{
         x: canvas.width/2-48,
-        y: canvas.height-96
+        y: canvas.height-116
     }
 });
 let bullet = [];
@@ -60,32 +62,23 @@ window.addEventListener("keyup",(event)=>{
     }
 });
 
+
+//start the game and spawn enemies and asteroids
 const gameStart = ()=>{
     window.removeEventListener("keydown", gameStart);
     hasStarted = true;
-
-    //spawn aliens in random positions with no overlapping by checking collision beforehand
-    for(let i=0; i<10*stage;i++){
-        let x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
-        let y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
-
-        for(let j=0; j<alien.length; j++){
-            if(x+64 >= alien[j].left && x <= alien[j].right && y+100 >= alien[j].top && y <= alien[j].bottom){
-                x = Math.floor(Math.random()* ((canvas.width-64)-64)+64);
-                y = Math.floor(Math.random()* ((canvas.height/2-64)-64)+64);
-                j = 0;
-            }
-        }
-
-        alien.push(new Alien({
-            position: {
-                x, y
-            }
-        }));
+    
+    theme.play();
+    //check stage for boss fight (future update)
+    if(stage<=4){
+        spawnEnemies();
     }
-    animate();
-};
-
+    // else if(stage==5){
+        //     spawnBoss("destroyer");
+        // }
+        animate();
+    };
+    
 const titleScreen = ()=>{
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.beginPath();
@@ -129,10 +122,10 @@ const animate = ()=>{
         for(let j=0;j<bullet.length;j++){
             if(collisionDetection(alien[i], bullet[j])){
                 bullet[j].isHit = true; 
-                alien[i].hitCount++;
+                alien[i].health-=34;
                 alien[i].imageIndex++;
                 alien[i].audio.enemyHit.play();
-                if(alien[i].hitCount==3){
+                if(alien[i].health<=0){
                     alien[i].isDead = true;
                     alien[i].audio.enemyDead.play();
                     score+=Math.floor(Math.random()* (10-4) + 4);
@@ -148,6 +141,17 @@ const animate = ()=>{
         },500);
         }
 
+        //check if alien is outside viewport
+        if(alien[i].top>canvas.height){
+            player.audio.playerHit.play();
+            player.health-=25;
+            alien[i].isDead = true;
+            alien[i].position = {
+                    x: -100,
+                    y: -100
+                };
+        }
+
         alien[i].draw(ctx);
         alien[i].update(canvas);
     }
@@ -159,6 +163,7 @@ const animate = ()=>{
 
     //lose condition
     if(player.health<=0 || timer<=0){
+        player.health = 0;
         gameLose();
     }
     //win condition
@@ -180,6 +185,17 @@ const collisionDetection = (A, B) =>{
     return (A.right >= B.left && A.left <= B.right  && A.bottom >= B.top && A.top <= B.bottom);
 };
 
+const spawnEnemies = () =>{
+      for(let i=0; i<totalEnemies; i++){
+          alien.push(new Alien({
+              position: {
+                  x: Math.floor(Math.random()* ((canvas.width-64)-64)+64),
+                  y: Math.floor(Math.random()*-100)
+              }
+          }));
+    }
+}
+
 const gameLose = () =>{
     hasStarted = false;
     ctx.beginPath();
@@ -195,6 +211,7 @@ const gameLose = () =>{
     //goto titlescreen after 2 sec
     setTimeout(()=>{
         score = 0;
+        totalEnemies = 4;
         stage = 1;
         resetVal();
         titleScreen();
@@ -216,16 +233,17 @@ const gameWin = ()=>{
     //goto titlescreen after 2 sec
     setTimeout(()=>{
         stage++;
+        totalEnemies += 2;
         resetVal();
         titleScreen();
     },2000);
 };
 
-//reset all stats and bullet & alien arrays
+//reset all stats and empty bullet & alien arrays
 const resetVal = () =>{
         player.position = {
             x: canvas.width/2-48,
-            y: canvas.height-96
+            y: canvas.height-116
         };
         player.health = 100;
         bullet = [];

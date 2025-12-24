@@ -7,13 +7,13 @@ class Alien {
         };
         this.speed = {
             x: 1,
-            y: 1
+            y: 0.5
         };
         this.direction = {
             x: 1,
             y: 1
         };
-        this.hitCount = 0;
+        this.health = 100;
         this.isDead = false;
         this.adjustFill = 32;
         this.imageIndex = 0;
@@ -44,8 +44,9 @@ class Alien {
             return;
         }
         ctx.beginPath();
-        // ctx.fillStyle = "orange";
+        ctx.fillStyle = "red";
         // ctx.fillRect(this.position.x, this.position.y, this.size.width, this.size.height);
+        ctx.fillRect(this.position.x+16, this.position.y-5, this.health/3, 10);
         ctx.drawImage(this.enemy1, this.imageIndex*64, 0*64, 64, 64, this.position.x-this.adjustFill/2, this.position.y-this.adjustFill/2, this.size.width+this.adjustFill, this.size.height+this.adjustFill);
         ctx.closePath();
     }
@@ -62,7 +63,7 @@ class Alien {
         }
 
         this.position.x+=this.speed.x*this.direction.x;
-        this.position.y+=this.speed.y*this.direction.y;
+        this.position.y+=this.speed.y;
 
     }
 }

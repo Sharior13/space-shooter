@@ -2,11 +2,12 @@ class Bullet {
     constructor({position}){
         this.position = position;
         this.size = {
-            width: 5,
-            height: 50
+            width: 32,
+            height: 64
         }
         this.speed = 3;
         this.isHit = false;
+        this.imageIndex = 0;
         this.image = new Image();
         this.image.src = "./assets/bullet/laser.png"
         this.laser = new Audio("./assets/audio/laser.ogg");
@@ -30,9 +31,9 @@ class Bullet {
             return;
         }
         ctx.beginPath();
-        ctx.fillStyle = "green";
+        // ctx.fillStyle = "green";
         // ctx.fillRect(this.position.x+45, this.position.y-40, this.size.width, this.size.height);
-        ctx.drawImage(this.image, 0, 0, 32, 32, this.position.x+45, this.position.y-40, this.size.width, this.size.height);
+        ctx.drawImage(this.image, this.imageIndex*32, 0, 32, 32, this.position.x, this.position.y, this.size.width, this.size.height);
         ctx.closePath();
     }
 

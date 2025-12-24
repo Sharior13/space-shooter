@@ -1,13 +1,12 @@
+import Player from "./entitites/player.js";
+import Bullet from "./entitites/bullet.js";
+import Alien from "./entitites/alien.js";
+
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
-
-
-import Player from "./player.js";
-import Bullet from "./bullet.js";
-import Alien from "./alien.js";
 
 let hasStarted = false, canFire = true, timer = 60, score = 0, stage = 1;
 const player = new Player({
@@ -40,17 +39,19 @@ window.addEventListener("keydown",(event)=>{
     }
     //spawn bullets on pressing space & ensure it doesnt spawn continously
     if(keys[" "] && canFire){
+        canFire = false;
         bullet.push(new Bullet({
             position:{
                 x: player.position.x,
                 y: player.position.y
             }
         }));
-        bullet[0].laser.play();
-        canFire = false;
         setTimeout(()=>{
             canFire = true;
-        },150);
+        },300);
+    }
+    if(keys[" "]){
+        bullet[0].laser.play();
     }
 });
 window.addEventListener("keyup",(event)=>{
@@ -176,12 +177,7 @@ const animate = ()=>{
 };
 
 const collisionDetection = (A, B) =>{
-    if(A.right >= B.left && A.left <= B.right  && A.bottom >= B.top && A.top <= B.bottom){
-        return true;
-    }
-    else{
-        return false;
-    }
+    return (A.right >= B.left && A.left <= B.right  && A.bottom >= B.top && A.top <= B.bottom);
 };
 
 const gameLose = () =>{
@@ -285,6 +281,14 @@ setInterval(()=>{
     else{
         if(player.imageIndex>=2){
             player.imageIndex = 0;
+        }
+    }
+
+    //bullet animation
+    for(let i=0; i<bullet.length; i++){
+        bullet[i].imageIndex++;
+        if(bullet[i].imageIndex>=7){
+            bullet[i].imageIndex = 0;
         }
     }
 },100);

@@ -1,6 +1,8 @@
 import Player from "./entitites/player.js";
-import Bullet from "./entitites/bullet.js";
+import { Bullet, EnemyBullet } from "./entitites/bullet.js";
 import Alien from "./entitites/alien.js";
+import Asteroid from "./entitites/asteroid.js";
+import { Health } from "./entitites/buff.js";
 
 const canvas = document.getElementById("canvas");
 let ctx = canvas.getContext("2d");
@@ -19,7 +21,12 @@ const player = new Player({
 });
 let bullet = [];
 let alien = [];
-const alienBullet = [];
+let enemyBullet = [];
+let asteroid = [];
+let asteroidX = [[-100,1], [canvas.width/2,1], [canvas.width+100,-1]];
+let healthPack = [];
+let timePlus = [];
+let shield = [];
 
 //map user inputs
 const keys = {
@@ -63,7 +70,7 @@ window.addEventListener("keyup",(event)=>{
 });
 
 
-//start the game and spawn enemies and asteroids
+//start the game and spawn enemies
 const gameStart = ()=>{
     window.removeEventListener("keydown", gameStart);
     hasStarted = true;
@@ -133,34 +140,123 @@ const animate = ()=>{
             }
         }
 
+        
         //check for player to alien collision
         if(collisionDetection(alien[i], player)){
             player.audio.playerHit.play();
             setTimeout(()=>{
                 player.health-=10/100;
-        },500);
+            },500);
         }
-
+        
         //check if alien is outside viewport
         if(alien[i].top>canvas.height){
             player.audio.playerHit.play();
-            player.health-=25;
+            player.health-=15;
             alien[i].isDead = true;
             alien[i].position = {
-                    x: -100,
-                    y: -100
-                };
+                x: -100,
+                y: -100
+            };
         }
-
+        
         alien[i].draw(ctx);
         alien[i].update(canvas);
     }
 
+    //spawn asteroids at random
+    if((Math.floor(Math.random()*(5000/stage+200)-1)+1) == 1){
+        let astX =  asteroidX[Math.floor(Math.random()*3)];
+        let astY = Math.floor(Math.random()*-100);
+        asteroid.push(new Asteroid({
+            position: {
+                x: astX[0],
+                y: astY
+            },
+            direction: {
+                x: astX[1],
+                y: 1
+            }
+        }));
+    }
+    for(let i=0; i<asteroid.length; i++){
+        //check for asteroid-player collsion
+        if(collisionDetection(player, asteroid[i])){
+            asteroid[0].boom.play();
+            asteroid[i].isDestroyed = true;
+            player.audio.playerHit.play();
+            player.health = 0;
+        }
+
+        //check if asteroid is outside viewport
+        if(asteroid[i].top>canvas.height){
+            asteroid[i].isDestroyed = true;
+            asteroid[i].position = {
+                x: -600,
+                y: -600
+            };
+        }
+        
+        asteroid[i].draw(ctx);
+        asteroid[i].update();
+    }
+
+    //randomly spawn power ups & check collision
+    if(player.health<=25){
+        if((Math.floor(Math.random()*((500*stage+100)-1)+1) == 1)){
+            healthPack.push(new Health({
+                position: {
+                    x:  Math.floor(Math.random()*(100-(canvas.width-100))+(canvas.width-100)),
+                    y: -100
+                }
+            }));
+        }
+    }
+    for(let i=0; i<healthPack.length; i++){
+        if(collisionDetection(player, healthPack[i])){
+            player.health += 50;
+            healthPack[i].isPicked = true;
+            healthPack[i].position = {
+                x: -500,
+                y: -500
+            };
+            healthPack[0].audio.play();
+        }
+        healthPack[i].draw(ctx);
+        healthPack[i].update();
+    }
+
+    //spawn alien-bullets at random
+    for(let i=0; i<alien.length; i++){
+        if((Math.floor(Math.random()*((1000/stage+200)-1)+1) == 1) && !alien[i].isDead){
+            enemyBullet.push(new EnemyBullet({
+                position:{
+                    x: alien[i].position.x,
+                    y: alien[i].position.y
+                }
+            }));
+            enemyBullet[0].laser.play();
+        }
+    }
+    
+    //check for bullet to player collision
+    for(let i=0;i<enemyBullet.length;i++){
+        if(collisionDetection(player, enemyBullet[i])){
+            enemyBullet[i].isHit = true;
+            player.audio.playerHit.play();
+            player.health-=15;
+
+        }
+        enemyBullet[i].draw(ctx);
+        enemyBullet[i].update();
+    }
+
+    //update bullets
     for(let i=0;i<bullet.length;i++){
         bullet[i].draw(ctx);
         bullet[i].update();
     }
-
+    
     //lose condition
     if(player.health<=0 || timer<=0){
         player.health = 0;
@@ -248,6 +344,11 @@ const resetVal = () =>{
         player.health = 100;
         bullet = [];
         alien = [];
+        enemyBullet = [];
+        asteroid = [];
+        healthPack = [];
+        timePlus = [];
+        shield = [];
         timer = 60;
 };
 
@@ -307,6 +408,12 @@ setInterval(()=>{
         bullet[i].imageIndex++;
         if(bullet[i].imageIndex>=7){
             bullet[i].imageIndex = 0;
+        }
+    }
+    for(let i=0; i<enemyBullet.length; i++){
+        enemyBullet[i].imageIndex++;
+        if(enemyBullet[i].imageIndex>=4){
+            enemyBullet[i].imageIndex = 0;
         }
     }
 },100);

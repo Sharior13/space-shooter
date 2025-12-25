@@ -10,8 +10,8 @@ class Alien {
             y: 0.5
         };
         this.direction = {
-            x: 1,
-            y: 1
+            x: (Math.round(Math.random())*2)-1,
+            y: (Math.round(Math.random())*2)-1
         };
         this.health = 100;
         this.isDead = false;

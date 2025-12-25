@@ -21,6 +21,7 @@ class Player {
             playerHit: new Audio("./assets/audio/playerHit.ogg"),
             stageClear: new Audio("./assets/audio/stageClear.ogg")
         };
+        this.isShielded = false;
     }
 
     get left(){

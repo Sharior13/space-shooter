@@ -2,7 +2,6 @@
     padding: 0;
     margin: 0;
     overflow: hidden;
-    background-color: antiquewhite; 
 }
 #canvas{
     background-image: url('./assets/background/background.png');
